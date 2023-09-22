@@ -1,0 +1,14 @@
+[project]
+name = 'pygments_cheatman'
+version = '1.0'
+dependencies = [
+	'pygments',
+	'importlib-metadata; python_version<"3.8"',
+]
+
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[project.entry-points."pygments.styles"]
+cheatman = 'pygments_cheatman:CheatManStyle'
