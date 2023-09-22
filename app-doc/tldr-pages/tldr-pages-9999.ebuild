@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit git-r3
+inherit git-r3 multiprocessing
 
 DESCRIPTION="tldr.sh pages, converted to man pages for offline use"
 HOMEPAGE="https://github.com/tldr-pages/tldr"
@@ -16,16 +16,17 @@ KEYWORDS=""
 
 DEPEND=""
 RDEPEND="${DEPEND}"
-BDEPEND="app-text/pandoc"
+BDEPEND="app-text/pandoc sys-process/parallel"
 
 src_compile() {
 	mkdir man
 	cd pages || die
-	for i in {common,linux}/*.md; do
-		name=${i%.md}
-		name=${name#*/}
-		pandoc -s -f markdown -t man -o "../man/$name.1t" "$i" || die
-	done
+	parallel \
+		-j$(makeopts_jobs) \
+		--verbose \
+		--halt now,fail=1 \
+		'pandoc -s -f markdown -t man -o ../man/{= s#^[a-z]+/(.+)\.md$#\1#; $_ = Q($_) =}.1t {= $_ = Q($_) =}' \
+		::: {common,linux}/*.md
 }
 
 src_install() {
